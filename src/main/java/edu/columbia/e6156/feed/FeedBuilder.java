@@ -31,7 +31,7 @@ public final class FeedBuilder implements RequestHandler<SNSEvent, Void> {
     private static final String FEED_TABLE = "PostFeed";
 
     private static final String EVENT_TYPE_KEY = "eventType";
-    private static final String UNKNOWN_TYPE = "UNKNOWN", CREATED_TYPE = "CREATED";
+    private static final String UNKNOWN_TYPE = "UNKNOWN", CREATED_TYPE = "CREATE";
 
     private static final String USER_ID = "userId";
     private static final String POST_ID = "postId";
@@ -50,9 +50,11 @@ public final class FeedBuilder implements RequestHandler<SNSEvent, Void> {
 
         try {
             Map<String, String> map = objectMapper.readValue(message, Map.class);
+            System.out.println(map);
 
             // Ignore other types of events
             if(!map.getOrDefault(EVENT_TYPE_KEY, UNKNOWN_TYPE).equals(CREATED_TYPE)) {
+                System.out.println("ERROR. Wrong event type");
                 return;
             }
 
@@ -61,10 +63,13 @@ public final class FeedBuilder implements RequestHandler<SNSEvent, Void> {
 
             // Invalid create event -- ignore
             if(userId == null || postId == null) {
+                System.out.println("ERROR. Invalid create event");
                 return;
             }
 
             List<String> followers = getFollowers(userId);
+            System.out.println(followers);
+
             followers.forEach(follower -> addToFeed(postId, follower));
 
         } catch (JsonProcessingException e) {
@@ -81,6 +86,7 @@ public final class FeedBuilder implements RequestHandler<SNSEvent, Void> {
         QueryResponse response = ddbClient.query(request);
         List<Map<String, AttributeValue>> items = response.items();
 
+        System.out.println(items);
         return items.stream().map(itemMap -> itemMap.get("follower").s()).collect(toList());
     }
 

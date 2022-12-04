@@ -9,6 +9,9 @@ repositories {
     mavenCentral()
 }
 
+sourceCompatibility = 11
+targetCompatibility = 11
+
 dependencies {
     implementation platform('software.amazon.awssdk:bom:2.18.24')
 
@@ -25,4 +28,12 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    enabled = true
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
